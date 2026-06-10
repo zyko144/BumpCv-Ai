@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bump-50: #f9fafb;
+  --color-bump-100: #f3f4f6;
+  --color-bump-200: #e5e7eb;
+  --color-bump-300: #d1d5db;
+  --color-bump-400: #9ca3af;
+  --color-bump-500: #6b7280;
+  --color-bump-600: #4b5563;
+  --color-bump-700: #374151;
+  --color-bump-800: #1f2937;
+  --color-bump-900: #111827;
+  --color-bump-950: #030712;
+  
+  --animate-liquid-flow: liquidFlow 15s ease-in-out infinite alternate;
+}
+
+@keyframes liquidFlow {
+  0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; }
+  100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  body {
+    background-color: #FBFBFD;
+    color: #1D1D1F;
+    overflow-x: hidden;
+  }
+}
+
+@utility glass {
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@utility glass-dark {
+  background-color: rgba(23, 23, 23, 0.6);
+  backdrop-filter: blur(24px);
+  border: 1px solid rgba(64, 64, 64, 0.5);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+@utility blob {
+  position: absolute;
+  filter: blur(64px);
+  opacity: 0.3;
+  mix-blend-mode: multiply;
+  animation: var(--animate-liquid-flow);
+  pointer-events: none;
+}

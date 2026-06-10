@@ -12,6 +12,7 @@ const __dirname = dirname(__filename);
 async function startBackend() {
   process.env.PORT = '3002'; // Force a specific port for the desktop app
   process.env.NODE_ENV = 'production'; // To serve the dist folder
+  process.env.DB_PATH = path.join(app.getPath('userData'), 'bumpcv.db'); // Safe path for SQLite
   // Load the express server from our compiled backend or source
   await import('../server/index.js');
 }

@@ -1,16 +1,18 @@
 import sqlite3 from 'sqlite3';
-import { join } from 'path';
+import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url));
-const dataDir = join(__dirname, '..', 'data');
+
+const dbPath = process.env.DB_PATH || join(__dirname, '..', 'data', 'bumpcv.db');
+const dataDir = dirname(dbPath);
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
 }
 
-export const db = new sqlite3.Database(join(dataDir, 'bumpcv.db'), (err) => {
+export const db = new sqlite3.Database(dbPath, (err) => {
   if (err) console.error('DB Error:', err.message);
   else console.log('BumpCv SQLite connected.');
 });

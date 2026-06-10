@@ -22,7 +22,6 @@ app.use(express.json({ limit: '10mb' }));
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-// Gemini init
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 // Helper to extract JSON from Gemini markdown

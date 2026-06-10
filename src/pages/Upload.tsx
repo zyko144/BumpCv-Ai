@@ -1,13 +1,25 @@
-import { useState, useRef } from 'react';
-import { UploadCloud, Loader2, CheckCircle2 } from 'lucide-react';
+import { useState, useRef, type DragEvent } from 'react';
+import { UploadCloud, CheckCircle2, FileText } from 'lucide-react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 export default function Upload({ setView }: { setView: (v: 'editor') => void }) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUpload = async (selectedFile: File) => {
+    if (selectedFile.type !== 'application/pdf') {
+      alert("Veuillez sélectionner un fichier PDF.");
+      return;
+    }
+    
     setFile(selectedFile);
     setLoading(true);
     
@@ -37,33 +49,64 @@ export default function Upload({ setView }: { setView: (v: 'editor') => void }) 
       // Store result in local storage to pass to editor
       if (data.data) {
         localStorage.setItem('bumped_cv', JSON.stringify(data.data));
-        setTimeout(() => setView('editor'), 1000);
+        setTimeout(() => setView('editor'), 1500);
+      } else {
+        throw new Error(data.error || "Réponse invalide");
       }
     } catch (err) {
       console.error(err);
-      alert("Erreur lors de l'analyse du CV.");
+      alert("Erreur lors de l'analyse du CV par l'IA.");
+      setFile(null);
+      setProgress(0);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const onDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleUpload(e.dataTransfer.files[0]);
     }
   };
 
   return (
     <main className="relative z-10 pt-32 pb-24 px-6 md:px-12 max-w-4xl mx-auto min-h-screen flex flex-col items-center justify-center">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-black text-neutral-900 mb-4">Uploadez votre CV</h1>
-        <p className="text-neutral-500">L'IA de BumpCv va lire votre PDF et l'améliorer instantanément.</p>
+        <h1 className="text-5xl font-black text-neutral-900 mb-4 tracking-tight">Uploadez votre CV</h1>
+        <p className="text-lg text-neutral-500 max-w-lg mx-auto">L'intelligence artificielle de BumpCv va lire votre document PDF, extraire vos compétences et restructurer votre parcours en un clin d'œil.</p>
       </div>
 
       {!loading && !file && (
         <div 
           onClick={() => fileInputRef.current?.click()}
-          className="w-full max-w-xl aspect-video glass rounded-3xl border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white/50 transition-colors"
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrop={onDrop}
+          className={cn(
+            "w-full max-w-2xl aspect-video glass rounded-[3rem] border-[3px] border-dashed flex flex-col items-center justify-center cursor-pointer transition-all duration-300 shadow-xl",
+            isDragging ? "border-blue-500 bg-blue-50/50 scale-[1.02]" : "border-neutral-300 hover:border-blue-400 hover:bg-white/80"
+          )}
         >
-          <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-4">
-            <UploadCloud className="w-8 h-8" />
+          <div className={cn(
+            "w-20 h-20 rounded-full flex items-center justify-center mb-6 transition-colors duration-300",
+            isDragging ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30" : "bg-blue-50 text-blue-600"
+          )}>
+            <UploadCloud className="w-10 h-10" />
           </div>
-          <p className="text-neutral-900 font-semibold text-lg">Cliquez pour sélectionner un PDF</p>
-          <p className="text-neutral-400 text-sm mt-2">ou glissez-déposez le fichier ici</p>
+          <p className="text-neutral-900 font-bold text-xl mb-2">Cliquez pour sélectionner un PDF</p>
+          <p className="text-neutral-500 text-sm">ou glissez-déposez le fichier directement ici</p>
           <input 
             type="file" 
             ref={fileInputRef} 
@@ -77,25 +120,36 @@ export default function Upload({ setView }: { setView: (v: 'editor') => void }) 
       )}
 
       {loading && (
-        <div className="w-full max-w-xl glass rounded-3xl p-8 flex flex-col items-center text-center">
-          <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-6" />
-          <h3 className="text-xl font-bold text-neutral-900 mb-2">Analyse IA en cours...</h3>
-          <p className="text-neutral-500 mb-6">Nous restructurons vos expériences et optimisons vos mots-clés.</p>
-          
-          <div className="w-full h-3 bg-neutral-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-blue-600 transition-all duration-300"
-              style={{ width: `${progress}%` }}
-            />
+        <div className="w-full max-w-2xl glass rounded-[3rem] p-12 flex flex-col items-center text-center shadow-2xl border border-white/60">
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-blue-500/20 blur-xl rounded-full" />
+            <div className="relative bg-white w-20 h-20 rounded-2xl shadow-sm flex items-center justify-center border border-neutral-100">
+              <FileText className="w-10 h-10 text-blue-600 animate-pulse" />
+            </div>
           </div>
+          
+          <h3 className="text-2xl font-black text-neutral-900 mb-3">Analyse IA en cours...</h3>
+          <p className="text-neutral-500 mb-8 max-w-md">Veuillez patienter pendant que nos algorithmes restructurent vos expériences et optimisent vos mots-clés ATS.</p>
+          
+          <div className="w-full h-4 bg-neutral-100/80 border border-neutral-200/50 rounded-full overflow-hidden shadow-inner">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 relative overflow-hidden"
+              style={{ width: `${progress}%` }}
+            >
+              <div className="absolute inset-0 bg-white/20 animate-[shimmer_1s_infinite_linear]" style={{ backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)' }} />
+            </div>
+          </div>
+          <span className="text-sm font-bold text-blue-600 mt-4">{progress}%</span>
         </div>
       )}
 
-      {progress === 100 && (
-        <div className="w-full max-w-xl glass rounded-3xl p-8 flex flex-col items-center text-center">
-          <CheckCircle2 className="w-12 h-12 text-emerald-500 mb-6" />
-          <h3 className="text-xl font-bold text-neutral-900 mb-2">CV Bumpsé avec succès !</h3>
-          <p className="text-neutral-500">Ouverture de l'éditeur dans quelques secondes...</p>
+      {progress === 100 && file && (
+        <div className="w-full max-w-2xl glass rounded-[3rem] p-12 flex flex-col items-center text-center shadow-2xl border border-white/60">
+          <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mb-6">
+            <CheckCircle2 className="w-12 h-12 text-emerald-500" />
+          </div>
+          <h3 className="text-3xl font-black text-neutral-900 mb-3">CV Analysé avec Succès !</h3>
+          <p className="text-neutral-500 font-medium">Ouverture de l'éditeur de conception magique...</p>
         </div>
       )}
     </main>

@@ -36,7 +36,10 @@ export default function Navigation({ currentView, setView }: Props) {
         </button>
       </div>
       <div className="flex items-center gap-4">
-        <button className="text-sm font-medium text-neutral-900 hover:opacity-70 transition-opacity">
+        <button 
+          onClick={() => alert("Fonctionnalité de connexion en cours de développement.")}
+          className="text-sm font-medium text-neutral-900 hover:opacity-70 transition-opacity"
+        >
           Connexion
         </button>
         <button 

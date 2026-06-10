@@ -116,9 +116,10 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Serve frontend in production
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(join(__dirname, '..', 'dist')));
-  app.get('*', (req, res) => {
-    res.sendFile(join(__dirname, '..', 'dist', 'index.html'));
+  const distPath = join(__dirname, '..', 'dist');
+  app.use(express.static(distPath));
+  app.use((req, res) => {
+    res.sendFile(join(distPath, 'index.html'));
   });
 }
 

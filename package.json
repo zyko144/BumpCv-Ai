@@ -12,7 +12,8 @@
     "start": "node server/index.js",
     "dev:backend": "node server/index.js",
     "electron:dev": "cross-env NODE_ENV=development concurrently \"npm run dev\" \"npm run dev:backend\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "postinstall": "npm rebuild sqlite3 --build-from-source"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
